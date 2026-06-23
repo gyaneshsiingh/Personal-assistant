@@ -4,14 +4,14 @@ import os
 from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_experimental.text_splitter import SemanticChunker
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.prompts import MessagesPlaceholder
+from langchain_core.prompts import PromptTemplate
 
 app = FastAPI(title="Personal Knowledge Assistant API")
 
@@ -42,9 +42,13 @@ def build_index(data_dir: str = "./knowledge_base"):
     
     print("2. Chunking Documents...")
 
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size = 400,
-    chunk_overlap = 80,
-    length_function = len)
+    # text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,
+    # chunk_overlap = 200,
+    # length_function = len)
+
+    chunker_embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
+
+    text_splitter = SemanticChunker(chunker_embeddings,breakpoint_threshold_type='percentile')
 
 
     chunks  = text_splitter.split_documents(documents)
@@ -76,7 +80,7 @@ def setup_rag():
         return
 
     
-    retriever = VECTOR_STORE.as_retriever(search_kwargs = {"k": 4})
+    retriever = VECTOR_STORE.as_retriever(search_kwargs = {"k": 12})
 
     llm = ChatGroq(model = LLM_MODEL,temperature=0)
 
@@ -94,8 +98,15 @@ def setup_rag():
         ("human", "{input}"),
     ])
 
+    document_prompt = PromptTemplate (
+        input_variables=["page_content", "source"],
+        template="Source Document: {source} \n\nContent: {page_content}"
+    )
+
     qa_chain = create_stuff_documents_chain(llm, prompt)
     RAG_CHAIN = create_retrieval_chain(retriever, qa_chain)
+    
+    
 
 @app.on_event("startup")
 async def startup_event():
@@ -111,7 +122,6 @@ async def root():
 
 class QueryRequest(BaseModel):
     query: str
-    chat_history: list = [] 
 
 
 class QueryResponse(BaseModel):
@@ -124,7 +134,7 @@ async def ask_question(request: QueryRequest):
     if not RAG_CHAIN:
         raise HTTPException(status_code = 500, detail = "Knowledge base is empty.Please add files to ./knowledge_base and restart")
 
-    result = RAG_CHAIN.invoke({"input": request.query, "chat_history": request.chat_history})
+    result = RAG_CHAIN.invoke({"input": request.query})
 
     answer = result["answer"]
 

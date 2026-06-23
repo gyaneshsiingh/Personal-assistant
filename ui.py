@@ -1,7 +1,6 @@
+
 import streamlit as st
 import requests
-import os
-import json
 
 
 st.title("Personal Knowledge Assistant")
@@ -9,17 +8,7 @@ st.title("Personal Knowledge Assistant")
 API_URL = "http://localhost:8000/ask"
 
 if "messages" not in st.session_state:
-    st.session_state.messages = [] 
-    if os.path.exists("chat_history.json"):
-        try:
-            with open("chat_history.json", "r") as f:
-                st.session_state.messages = json.load(f)
-        except json.JSONDecodeError:
-            pass
-
-def save_history():
-    with open("chat_history.json", "w") as f:
-        json.dump(st.session_state.messages, f)
+    st.session_state.messages = []
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
@@ -37,7 +26,7 @@ if prompt := st.chat_input("What would you like to know"):
 
     try:
         with st.spinner("Thinking..."):
-            response = requests.post(API_URL, json = {"query": prompt,"chat_history": st.session_state.messages})
+            response = requests.post(API_URL, json = {"query": prompt})
 
             response.raise_for_status()
             data = response.json()
@@ -55,5 +44,3 @@ if prompt := st.chat_input("What would you like to know"):
 
     except requests.exceptions.RequestException as e:
         st.error(f"Error connecting to backend: {e}. Is the FastAPI server running?")
-
-    save_history()
