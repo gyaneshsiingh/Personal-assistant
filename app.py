@@ -23,8 +23,7 @@ EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
 
 LLM_MODEL = "llama-3.1-8b-instant"
 
-os.environ["GROQ_API_KEY"] = "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"
-
+os.environ["GROQ_API_KEY"] = ""
 def build_index(data_dir: str = "./knowledge_base"):
     global VECTOR_STORE,RAG_CHAIN
     print("1. Collecting documents")
