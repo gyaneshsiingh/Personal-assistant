@@ -11,7 +11,7 @@ A full-stack Retrieval-Augmented Generation (RAG) system that allows you to chat
 ## ✨ Features
 * **Semantic Chunking:** Groups document sentences by their underlying mathematical meaning rather than an arbitrary character count limit.
 * **Metadata-Rich Chunking:** Injects document source titles directly into the semantic chunks, preventing "Document Confusion" when querying across multiple PDFs.
-* **Local Persistent Memory:** Chat history is saved locally in `chat_history.json` so your conversations remain even after a page refresh.
+
 
 ## 📦 Installation & Setup
 
