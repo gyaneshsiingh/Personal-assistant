@@ -79,17 +79,19 @@ def setup_rag():
         return
 
     
-    retriever = VECTOR_STORE.as_retriever(search_kwargs = {"k": 12})
+    retriever = VECTOR_STORE.as_retriever(search_kwargs = {"k": 15})
 
     llm = ChatGroq(model = LLM_MODEL,temperature=0)
 
     system_prompt = (
-        "You Are An Intelligent Knowledge Assistant. "
-        "Use The Following Retrieved Context To Answer The Questions. "
-        "If the answer is not in the context, say 'I don't know based on my current knowledge base.' "
-        "Do not make up answers."
+        "You are an intelligent knowledge assistant with access to multiple resumes and documents. "
+        "Use the retrieved context below to answer questions as specifically and completely as possible. "
+        "When answering, always mention which person or document the information comes from. "
+        "If a question asks about a specific person, focus only on that person's information. "
+        "Only say 'I don't know' if the topic is completely absent from ALL retrieved context. "
+        "If partial information is available, provide it rather than refusing to answer."
         "\n\nContext:\n{context}"
-    ) 
+    )
 
 
     prompt = ChatPromptTemplate.from_messages([
