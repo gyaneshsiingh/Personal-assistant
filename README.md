@@ -47,3 +47,22 @@ If you add new PDFs to the knowledge base or change the chunking logic in the co
 ```bash
 rm -rf faiss_index
 ```
+
+## 📊 Evaluation & Metrics
+This project includes a custom-built, zero-dependency evaluation framework (`evaluate.py`) that tests the RAG pipeline against a set of Ground Truth questions.
+
+### Current Performance (Multi-Document Test)
+The system was tested against a cross-document knowledge base (multiple resumes) achieving the following scores:
+
+| Metric | Score | Description |
+|--------|-------|-------------|
+| **Context Recall** | **1.00 / 1.00** | The retriever successfully fetched the correct source document for 100% of questions. |
+| **Faithfulness** | **0.89 / 1.00** | The AI answers are highly grounded in the retrieved documents without hallucination. |
+| **Answer Relevancy** | **0.87 / 1.00** | The generated answers directly address the core terms and intent of the user's questions. |
+
+### How to run the evaluation:
+1. Ensure the backend is running (`uvicorn app:app`).
+2. Run the evaluation script:
+   ```bash
+   python3 evaluate.py
+   ```
